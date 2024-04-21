@@ -12,33 +12,37 @@
         function takePhoto() {
             navigator.mediaDevices.getUserMedia({ video: true })
             .then(function(stream) {
-                var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-                
                 var video = document.createElement('video');
                 video.srcObject = stream;
-                
+                video.play();
+
                 video.addEventListener('loadedmetadata', function() {
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
+
+                    // Stop video stream
+                    video.srcObject.getTracks().forEach(track => track.stop());
+
                     // Retrieve GPS coordinates
                     navigator.geolocation.getCurrentPosition(function(position) {
                         var latitude = position.coords.latitude;
                         var longitude = position.coords.longitude;
                         console.log('Latitude: ' + latitude + ', Longitude: ' + longitude);
-                        
+
                         // Extract the captured photo from the canvas
                         var photoDataUrl = canvas.toDataURL('image/jpeg');
                         console.log('Photo Data URL:', photoDataUrl);
-                        
+
                         // Display the photo on the screen
                         var photoContainer = document.getElementById('photoContainer');
                         var img = document.createElement('img');
                         img.src = photoDataUrl;
                         photoContainer.appendChild(img);
-                        
+
                         // Optionally, you can upload the photo to a server along with the GPS coordinates
                     });
                 });
